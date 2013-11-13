@@ -1,0 +1,10 @@
+DSudoku
+=======
+
+* DSudoku is a simple library to create, generate and solve Sudoku-games.
+* DSudoku is completely written in the D-Programming-Language¹
+* It is licensed under the "BEER-WARE LICENSE"²
+
+
+[1]: Visit http://www.dlang.org for more information about D.
+[2]: Visit http://people.freebsd.org/~phk/ for more information about BEER-WARE.
