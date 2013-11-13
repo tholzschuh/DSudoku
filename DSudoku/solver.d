@@ -1,4 +1,5 @@
 // Written in the D programming language. $(WEB: http://www.dlang.org)
+
 /*
  * ------------------------------------------------------------------------
  * Author: Tim Holzschuh
@@ -17,6 +18,11 @@ alias HEIGHT = Sudoku.sudokuHeight;
 alias WIDTH = Sudoku.sudokuWidth;
 
 immutable defaultVal = 0;
+
+	version( unittest ) 
+	{
+		immutable int[] sudokuVals = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
+	}
 
 /**
  Removes an int (called v) from another array of ints (called arr) and returns the resulting array.
@@ -40,7 +46,7 @@ body {
 
 
 unittest {
-	int[] arr = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
+	int[] arr = sudokuVals.dup;
 	int val = 5;
 
 	assert( remove( arr, val ) == [ 1, 2, 3, 4, 6, 7, 8, 9 ] );
@@ -64,7 +70,7 @@ bool contains( in int[] arr, in int val ) pure
 }
 
 unittest {
-	int[] arr = [ 1, 2, 3, 4, 5, 6, 7,8, 9 ];
+	int[] arr = sudokuVals.dup;
 	int val = 5;
 
 	assert( contains( arr, val ) );
@@ -85,9 +91,6 @@ out( result ) {
 body {
 	int[] buf = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
 
-	int startX = cast(int)( (r / 3) * 3 );
-	int startY = cast(int)( (c / 3) * 3 );
-
 	foreach( i; 0..HEIGHT ) {
 				buf = remove( buf, abs( s.get( r, i ) ) );
 				buf = remove( buf, abs( s.get( i, c ) ) );
@@ -95,7 +98,7 @@ body {
 
 	foreach( i; 0..3 ) {
 		foreach( j; 0..3 ) {
-				buf = remove( buf, abs( s.get( i + startX, j + startY ) ) );		
+				buf = remove( buf, abs( s.get( i + (c / 3 * 3), j + (r / 3 * 3) ) ) );		
 		}
 	}
 
@@ -106,12 +109,12 @@ unittest {
 
 	Sudoku s;
 
-	assert( getPossible(s, 0, 0 ) == [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ] );
+	assert( getPossible(s, 0, 0 ) == sudokuVals );
 	assert( getPossible( s, 0, 0).length == 9 );
 
 
 	s.set( 1, 0, 0 );
-	assert( getPossible( s, 0, 0 ) == [ 2, 3, 4, 5, 6, 7, 8, 9 ] );
+	assert( getPossible( s, 0, 0 ) == sudokuVals[1..$] );
 
 	s.set( 2, 0, 1 );
 	assert( getPossible(s, 0, 0).length == 7 );
@@ -210,44 +213,43 @@ unittest {
 /**
  Inserts all possible values for the Sudoku s, beginning at [startY][startX].
 */
-bool insert( ref Sudoku s, in int startY, in int startX )
+bool insert( ref Sudoku s, in int startR, in int startC)
 in {
-	assert( startY >= 0 && startY <= HEIGHT );
-	assert( startX >= 0 && startX <= WIDTH );
+	assert( startR >= 0 && startR <= HEIGHT );
+	assert( startC >= 0 && startC <= WIDTH );
 }
 body {
 	int[] poss;
-	int y = startY + 1;
-	int x = startX;
+	int r = startR + 1;
+	int c = startC;
 
-	if( s.get( startY, startX ) == 0 ) {
-		poss = getPossible( s, startY, startX );
+	if( s.get( startR, startC ) == 0 ) {
+		poss = getPossible( s, startR, startC );
 
 		if( poss.length == 0 ) return false;
 
-		s.set( poss[0], startY, startX ); 
+		s.set( poss[0], startR, startC ); 
 	}	
 
-	if( y >= HEIGHT ) {
-		y = 0;
-		x++;	
+	if( r >= HEIGHT ) {
+		r = 0;
+		c++;	
 	}
 
-	if( x >= WIDTH ) {
+	if( r >= WIDTH ) {
 		return true;
 	}
 	
-	while( !insert( s, y, x ) ) {
+	while( !insert( s, r, c ) ) {
 		if( poss is null ) return false;
 		else {
-			//poss = remove( poss, s.get( startY, startX ) );
 			poss = poss[1..$];
 
 			if( poss.length == 0 ) {
-				s.set( 0, startY, startX );
+				s.set( 0, startR, startC );
 				return false;
 			}
-			s.set( poss[0], startY, startX );		
+			s.set( poss[0], startR, startC );		
 		}
 	}
 	return true;

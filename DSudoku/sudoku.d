@@ -93,7 +93,7 @@ struct Sudoku {
 				writeln();
 			}
 
-			foreach( j; 0..Sudoku.sudokuHeight ) {
+			foreach( j; 0..Sudoku.sudokuWidth ) {
 				auto val = s.get( i, j );
 				
 				if( j == 0 ) {
