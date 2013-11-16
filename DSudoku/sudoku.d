@@ -3,7 +3,7 @@
 /*
  * ------------------------------------------------------------------------
  * Author: Tim Holzschuh
- * Date: 12.11.2013
+ * Date: 16.11.2013
  * License. "THE BEER-WARE LICENSE"; $(WEB http://people.freebsd.org/~phk/)
  * ------------------------------------------------------------------------
  */
@@ -18,156 +18,309 @@ import std.stdio : write, writeln, readln;
 import std.file : exists, isFile, readText, append;
 import std.string : chomp, split, format;
 import std.conv : to;
-import std.math : abs;
 
 struct Sudoku {
 
 	/**
-	 Returns the _field Array of the Sudoku.
-	*/
-	@property int[sudokuHeight][sudokuWidth] field() pure
-	{ 
-		return _field;
-	}
-
-
-	/**
-         Replaces the value of _field with field.
-	*/
-	@property void field( in int[sudokuHeight][sudokuWidth] field ) 
-	{
-		_field = field;
-	}
-
-	/**
-	 Returns the value of _field at the position specified at the input.
-	*/
-	int get( in int r, in int c ) const pure 
-	in {
-		assert( r >= 0 && r < Sudoku.sudokuHeight );
-		assert( c >= 0 && c < Sudoku.sudokuWidth );
-	}
-	body {
-		return _field[r][c];
-	}
-
-
-	/**
-	 Replaces the Value of _field at the Position specified at the input, with val (input as well).
-	*/
-	void set( in int val, in int r, in int c )  
-	in {
-		assert( r >= 0 && r < Sudoku.sudokuHeight );
-		assert( c >= 0 && c < Sudoku.sudokuWidth );
-		assert( abs( val ) <= 9 );
-	}
-	body {
-		_field[r][c] = val;
-	}
-
-	/**
 	 Returns the height of the Sudoku.
 	*/
-	@property int height() pure
+	@property int height() const pure
 	{
 		return Sudoku.sudokuHeight;
+	}
+	
+	unittest {
+		Sudoku s;
+		assert( s.height == Sudoku.sudokuHeight );
+		assert( s.height == 9 );
 	}
 
 	/**
 	 Returns the width of the Sudoku.
 	*/
-	@property int width() pure
+	@property int width() const pure
 	{
 		return Sudoku.sudokuWidth;
 	}
 
+	unittest {
+		Sudoku s;
+		assert( s.width == Sudoku.sudokuWidth );
+		assert( s.width == 9 );
+	}
+
+	
 	/**
-	 Prints the Sudoku from the input.
+	 Initializes the Sudoku with an empty Sudoku.
 	*/
-	static void print( in Sudoku s ) {
-		foreach( i; 0..Sudoku.sudokuHeight ) {
-			if( i % 3 == 0 && i != 0 ) {
-				foreach( l; 0..Sudoku.sudokuHeight * 2 + 1 ) {
-					write( "-" );
+	@property void reset() {
+		this =  Sudoku();
+	}
+
+	unittest {
+		Sudoku s;
+		s[0, 0] = 1;
+		s[0, 1] = 2;
+		s[0, 2] = 3;
+		s[0, 3] = 4;
+
+		s.reset;
+
+		assert( s == Sudoku() );
+	}
+
+	/**
+	 Returns the string-representation of a sudoku-object
+	*/
+	string toString() const {
+
+		string str;
+
+		string zeroString = ". ";
+		string pipe = "| ";
+		string seperate = "-";
+
+		foreach( row; 0..height() ) {
+			if( row % 3 == 0 && row != 0 ) {
+				foreach( col; 0..height() * 2 + 3 ) {
+					str ~= seperate;
 				}
-				writeln();
+				str ~= "\n";
 			}
 
-			foreach( j; 0..Sudoku.sudokuWidth ) {
-				auto val = s.get( i, j );
-				
-				if( j == 0 ) {
-					if( val == 0 ) write( ". " );
-					else write( val, " " );
-				} else if( j % 3 == 0 ) {
-					write( "|" );
-					if( val == 0 ) write( ". " );
-					else write( val, " " );
+			foreach( col; 0..width() ) {
+				auto val = this[row, col];
+			
+				if( col == 0 ) {
+					if( val == 0 ) str ~= zeroString;
+					else str ~= format( "%s ", val );
+				} else if( col % 3 == 0 ) {
+					str ~= pipe;
+					if( val == 0 ) str ~= zeroString;
+					else str ~= format( "%s ", val );
 				} else {
-					if( val == 0 ) write( ". " );
-					else write( val, " " );
+					if( val == 0 ) str ~= zeroString;
+					else str ~= format( "%s ", val );
 				}
+
 			}
-			writeln();
+			str ~= "\n";
 		}
+
+		return str;
 	}
 
 	/**
-	 Tries to create a Sudoku from the Input-File "filename"
+	 Returns the value at the specified index.
 	*/
-	static Sudoku createByFile( in string filename ) {
+	int opCall( in int index ) const pure
+	in {
+		assert( index >= 0 && index < 81 );
+	}
+	body {
+		return _board[ index / height ][ index % width ];
+	}
+
+	unittest {
 		Sudoku s;
 
-		int r, c;
-		int cur;
+		s[ 8, 8 ] = 9;
 
-		if( exists( filename ) && filename.isFile ) {
-			string[] vals = split( readText!(string)( filename) );
-
-				foreach( i; 0..Sudoku.sudokuWidth ) {
-					foreach( j; 0..Sudoku.sudokuHeight ) {
-						s.set( to!(int)(vals[cur]), i, j);
-						++cur;
-					}
-				}
-		}
-		return s;
+		assert( s(80) == 9 );
 	}
 
 	/**
-	 Tries to create a Sudoku by the User-Input.
-	 */
-	static Sudoku createByInput()
-	{
+	 Returns the value at the specified row and column.
+   	*/
+	int opIndex( in int row, in int col ) const pure
+	in {
+		assert( row >= 0 && row < height );
+		assert( col >= 0 && col < width );
+	}
+	body {
+		return _board[row][col];
+	}
+
+	unittest {
 		Sudoku s;
 
-		foreach( row; 0..s.height ) {
-			foreach( col; 0..s.width ) {
-				write("Value: [", row+1, "|", col+1, "]: " );
+		s[ 0, 0 ] = 5;
 
-				string str = chomp( readln() );
-				if( str == Sudoku.endInput ) return s;
-				else s.set( to!int(str), row, col );				
-				writeln();
+		assert( s[ 0, 0 ] == 5 );
+	}
+
+	/**
+	 Sets the given value at the specified row and column.
+	*/
+	void opIndexAssign( in int val, in int row, in int col )
+	in {
+		assert( row >= 0 && row < height );	
+		assert( col >= 0 && col < width );
+		assert( val >= -9 && val <= 9 );
+	}
+	body {
+		_board[row][col] = val;
+	}
+	
+	unittest {
+		Sudoku s;
+
+		s[ 5, 0 ] = 5;
+
+		assert( s[ 5, 0 ] == 5 );
+	}	
+
+	/**
+	 Turns the sign of every positive value of the given Sudoku.
+	*/	
+	ref Sudoku opUnary( string op )() if( op == "-" )
+	{
+		foreach( row; 0..height ) {
+			foreach( col; 0..width ) {
+				if( this[ row, col ] > 0 ) {
+					this[ row, col ] = -this[ row, col ];
+				}
+			}
+		}
+		return this;
+	}
+
+	/**
+	 Turns the sign of every negative value of the given Sudoku.
+	*/
+	ref Sudoku opUnary( string op )() if( op == "+" )
+	{
+		foreach( row; 0..height ) {
+			foreach( col; 0..width ) {
+				if( this[ row, col ] < 0 ) {
+					this[ row, col ] = -this[ row, col ];
+				}
+			}
+		}
+		return this;
+	}
+
+	unittest {
+		Sudoku s;
+
+		s[ 0, 0 ] = 5;
+		s = -s;
+
+		assert( s[ 0, 0 ] == -5 );	
+
+		s = +s;
+		assert( s[0, 0] == 5 );
+
+	}
+
+	/**
+	 Returns true if the specified Value is already used in the specified Row/Column/Grid, and false otherwise.
+	*/
+	bool opBinaryRight( string op )( int[] lhs ) const pure if( op == "in" ) 
+	in {
+		assert( lhs.length > 2 );
+	}
+	body {
+		int val = lhs[0];
+		int startR = lhs[1] / 3 * 3;
+		int startC = lhs[2] / 3 * 3;
+		
+		foreach( row; 0..height ) {
+			foreach( col; 0..width ) {
+				if( this[ startR, col ] == val || this[ row, startC ] == val )
+					return true;
 			}
 		}
 
+		foreach( row; 0..3 ) {
+			foreach( col; 0..3 ) {
+				if( this[ startR + row, startC + col ] == val )
+					return true;
+			}
+		}
+		
+		return false;
+
+	}
+
+	unittest {
+		Sudoku s;
+
+		s[ 0, 0 ] = 4;
+		assert( [ 4, 0, 0 ] in s );
+
+	}
+
+	/**
+	 Returns the Multidimensional-Integer-Array-representation of a Sudoku.
+	*/
+	int[sudokuHeight][sudokuWidth] opConv( T : int[sudokuHeight][sudokuWidth] )() const pure
+	{
+		return _board;
+	}
+
+	unittest {
+		Sudoku s;
+	
+		s[ 0, 0 ] = 4;
+
+		int[sudokuHeight][sudokuWidth] board = cast(int[sudokuHeight][sudokuWidth])(s);
+
+		assert( board[0][0] == 4 );
+
+	}
+
+	/**
+	 This is D's approach for default-constructors inside Stucts.
+	 It is used like this:
+		Sudoku s = Sudoku();
+	*/
+	static Sudoku opCall()
+	{
+		Sudoku s;
 		return s;
 	}
 
-	static toFile( Sudoku s, string filename ) 
-	{
-		foreach( row; 0..s.height ) {
-			foreach( col; 0..s.width ) {
-				append( filename, format( "%s ", s.get( row, col ) ) );		
-			}
-				append( filename, "\n" );
-		}
-	}
+
+        /**
+         Tries to create a Sudoku from the Input-File "filename"
+        */
+        static Sudoku createByFile( in string filename ) {
+                Sudoku s;
+
+                int cur;
+
+                if( exists( filename ) && filename.isFile ) {
+                        string[] vals = split( readText!(string)( filename) );
+
+                                foreach( row; 0..Sudoku.sudokuWidth ) {
+                                        foreach( col; 0..Sudoku.sudokuHeight ) {
+                                                s[row, col] = to!(int)(vals[cur]);
+                                                ++cur;
+                                        }
+                                }
+                }
+                return s;
+        }
+
+	/**
+	 Writes the given Sudoku to the file, called filename.
+	*/
+        static toFile( Sudoku s, in string filename )
+        {
+                foreach( row; 0..s.height ) {
+                        foreach( col; 0..s.width ) {
+                                append( filename, format( "%s ", s[row, col] ) );         
+                        }
+                                append( filename, "\n" );
+                }
+        }
 
 	static enum endInput = "END";
 	static enum sudokuHeight = 9;
 	static enum sudokuWidth = 9;
+	static enum defaultValue = 0;
+	static enum totalValueAmount = sudokuHeight * sudokuWidth;
 
-	private int[sudokuHeight][sudokuWidth] _field;
+	private int[sudokuHeight][sudokuWidth] _board;
 }
