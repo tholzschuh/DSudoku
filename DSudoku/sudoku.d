@@ -3,7 +3,7 @@
 /*
  * ------------------------------------------------------------------------
  * Author: Tim Holzschuh
- * Date: 16.11.2013
+ * Date: 24.11.2013
  * License. "THE BEER-WARE LICENSE"; $(WEB http://people.freebsd.org/~phk/)
  * ------------------------------------------------------------------------
  */
@@ -24,7 +24,7 @@ struct Sudoku {
 	/**
 	 Returns the height of the Sudoku.
 	*/
-	@property int height() const pure
+	int height() const pure @property
 	{
 		return Sudoku.sudokuHeight;
 	}
@@ -38,7 +38,7 @@ struct Sudoku {
 	/**
 	 Returns the width of the Sudoku.
 	*/
-	@property int width() const pure
+	int width() const pure @property
 	{
 		return Sudoku.sudokuWidth;
 	}
@@ -53,7 +53,8 @@ struct Sudoku {
 	/**
 	 Initializes the Sudoku with an empty Sudoku.
 	*/
-	@property void reset() {
+	void reset() @property 
+	{
 		this =  Sudoku();
 	}
 
@@ -70,7 +71,7 @@ struct Sudoku {
 	}
 
 	/**
-	 Returns the string-representation of a sudoku-object
+	 Returns the string-representation of the Sudoku.
 	*/
 	string toString() const {
 
@@ -111,11 +112,11 @@ struct Sudoku {
 	}
 
 	/**
-	 Returns the value at the specified index.
+	 Returns the value at the given index.
 	*/
 	int opCall( in int index ) const pure
 	in {
-		assert( index >= 0 && index < 81 );
+		assert( index >= 0 && index < Sudoku.totalValueAmount );
 	}
 	body {
 		return _board[ index / height ][ index % width ];
@@ -130,7 +131,7 @@ struct Sudoku {
 	}
 
 	/**
-	 Returns the value at the specified row and column.
+	 Returns the value at the given coordinate.
    	*/
 	int opIndex( in int row, in int col ) const pure
 	in {
@@ -171,7 +172,7 @@ struct Sudoku {
 	}	
 
 	/**
-	 Turns the sign of every positive value of the given Sudoku.
+	 Turns the sign of every positive value to it's opposite. 
 	*/	
 	ref Sudoku opUnary( string op )() if( op == "-" )
 	{
@@ -186,7 +187,7 @@ struct Sudoku {
 	}
 
 	/**
-	 Turns the sign of every negative value of the given Sudoku.
+	 Turns the sign of every negative value to it's opposite.
 	*/
 	ref Sudoku opUnary( string op )() if( op == "+" )
 	{
@@ -214,11 +215,11 @@ struct Sudoku {
 	}
 
 	/**
-	 Returns true if the specified Value is already used in the specified Row/Column/Grid, and false otherwise.
+	 Returns true if the given value is already used in the specified row/column/box, and false otherwise.
 	*/
 	bool opBinaryRight( string op )( int[] lhs ) const pure if( op == "in" ) 
 	in {
-		assert( lhs.length > 2 );
+		assert( lhs.length == 3 );
 	}
 	body {
 		int val = lhs[0];
@@ -254,7 +255,7 @@ struct Sudoku {
 	/**
 	 Returns the Multidimensional-Integer-Array-representation of a Sudoku.
 	*/
-	int[sudokuHeight][sudokuWidth] opConv( T : int[sudokuHeight][sudokuWidth] )() const pure
+	auto opConv( T : int[sudokuHeight][sudokuWidth] )() const pure
 	{
 		return _board;
 	}
@@ -264,14 +265,14 @@ struct Sudoku {
 	
 		s[ 0, 0 ] = 4;
 
-		int[sudokuHeight][sudokuWidth] board = cast(int[sudokuHeight][sudokuWidth])(s);
+		auto board = cast(int[sudokuHeight][sudokuWidth])(s);
 
 		assert( board[0][0] == 4 );
 
 	}
 
 	/**
-	 This is D's approach for default-constructors inside Stucts.
+	 This is D's approach for default-constructors inside Structs.
 	 It is used like this:
 		Sudoku s = Sudoku();
 	*/
@@ -304,7 +305,7 @@ struct Sudoku {
         }
 
 	/**
-	 Writes the given Sudoku to the file, called filename.
+	 Serializes the given Sudoku in a File, called $(filename).
 	*/
         static toFile( Sudoku s, in string filename )
         {
@@ -316,7 +317,6 @@ struct Sudoku {
                 }
         }
 
-	static enum endInput = "END";
 	static enum sudokuHeight = 9;
 	static enum sudokuWidth = 9;
 	static enum defaultValue = 0;

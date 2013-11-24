@@ -3,7 +3,7 @@
 /*
  * ------------------------------------------------------------------------
  * Author: Tim Holzschuh
- * Date: 16.11.2013
+ * Date: 24.11.2013
  * License: "THE BEER-WARE LICENSE"; $(WEB: http://people.freebsd.org/~phk/)
  * ------------------------------------------------------------------------
  */
@@ -15,8 +15,17 @@ import utils;
 
 import std.random : uniform;
 
+
 /**
- Inserts all possible values for the Sudoku s, beginning at [startY][startX].
+ Inserts all possible values for the Sudoku s, beginning at the specified Coordinate.
+*/
+bool insert( ref Sudoku s, in Point start, in bool randomized )
+{
+	insert( s, start.y, start.x, randomized );
+}
+
+/**
+ Inserts all possible values for the Sudoku s, beginning at the specified Row/Column.
 */
 bool insert( ref Sudoku s, in int startR, in int startC, in bool randomized = false)
 in {
@@ -34,7 +43,7 @@ body {
 		if( poss.length == 0 ) return false;
 
 		if( randomized ) {
-			s[ startR, startC ] = cast(int)uniform( 0, poss.length );
+			s[ startR, startC ] = poss[ cast(int)uniform( 0, poss.length ) ];
 		} else {
 			s[ startR, startC ] = poss[0];
 		}
@@ -60,7 +69,7 @@ body {
 			}
 			
 			if( randomized ) {
-				s[ startR, startC ] = cast(int)uniform( 0, poss.length );
+				s[ startR, startC ] = poss[ cast(int)uniform( 0, poss.length ) ];
 			} else {
 				s[ startR, startC ] = poss[0];
 			}

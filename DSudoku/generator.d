@@ -3,7 +3,7 @@
 /*
  * -------------------------------------------------------------------------
  * Author: Tim Holzschuh
- * Date: 16.11.2013
+ * Date: 24.11.2013
  * License: "THE BEER-WARE LICENSE"; $(WEB: http://people.freebsd.org/~phk/)
  * -------------------------------------------------------------------------
  */
@@ -21,6 +21,7 @@ import std.random : uniform;
 		import std.stdio : writeln;
 	}
 
+// Simple datastructure, that represents the predefined Difficulties of a Sudoku.
 enum Difficulty {
 	HARD = 10, MEDIUM = 20, EASY = 30, EMPTY = 0
 }

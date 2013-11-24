@@ -3,7 +3,7 @@
 /*
  * -------------------------------------------------------------------------
  * Author: Tim Holzschuh
- * Date: 16.11.2013
+ * Date: 24.11.2013
  * License: "THE BEER-WARE LICENSE"; $(WEB: http://people.freebsd.org/~phk/)
  * -------------------------------------------------------------------------
  */
@@ -14,14 +14,49 @@ module utils;
 import sudoku;
 
 import std.math : abs;
+import std.string : format;
 
 	version( unittest )
 	{
 		immutable(int[]) testValues = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
 	}
 
+
+struct Point
+{
+	private:
+		int _x;
+		int _y;
+
+	public:
+		int x() const pure @property
+		{
+			return _x;
+		}
+
+		int y() const pure @property
+		{
+			return _y;
+		}
+
+		void x( int x ) @property
+		{
+			_x = x;
+		}
+
+		void y( int y ) @property
+		{
+			_y = y;
+		}
+
+		string toString() const pure
+		{
+			return format( "[%s, %s]", _x, _y );
+		}
+}
+
 /**
- Removes the specified Value from the Array, if the Array contains it.
+ Removes the given value from the specified array.
 */
 void remove(T)( ref T arr[], in T val )
 body {
@@ -48,10 +83,10 @@ unittest {
 }
 
 /**
- Returns true if the given Array contains the specified value.
- If the Array doesn't contain the value, the function returns false.
+ Returns true if the given array contains the specified value.
+ If the array doesn't contain the value, the function returns false.
 */
-bool contains(T)( in T[] arr, in T val ) pure
+auto contains(T)( in T[] arr, in T val ) pure
 {
 
         foreach( element; arr ) {
@@ -64,87 +99,17 @@ bool contains(T)( in T[] arr, in T val ) pure
 }
 
 unittest {
-        int[] arr = testValues.dup;
-        int val = 5;
+        auto arr = testValues.dup;
+        auto val = 5;
 
         assert( contains!int( arr, val ) );
         assert( !contains!int( arr, 10 ) );
 }
 
 /**
- Returns the indexes of all empty field in the Sudoku.
-*/
-int[][] getEmptyFields( in Sudoku s ) pure
-out( result ) {
-	assert( result.length >= 0 && result.length <= Sudoku.totalValueAmount );
-}
-body {
-	int[][] empty;
-
-	foreach( row; 0..s.height ) {
-		foreach( col; 0..s.width ) {
-			if( s[row, col] == Sudoku.defaultValue ) {
-				empty ~= [ row, col ];	
-			}
-		}
-	}
-
-	return empty;
-}
-
-
-unittest {
-	Sudoku s;
-	assert( getEmptyFields(s).length == Sudoku.totalValueAmount );
-
-	s[ 0, 0 ] = 1;
-	s[ 0, 1 ] = 2;
-	s[ 0, 2 ] = 3;
-
-	assert( getEmptyFields(s).length == Sudoku.totalValueAmount - 3 );
-
-	auto empty = getEmptyFields(s);
-	assert( s[ empty[0][0], empty[0][1] ] == 0 );
-}
-
-
-/**
- Returns the indexes of all filled fields in the Sudoku.
-*/
-int[][] getFilledFields( in Sudoku s ) pure
-out( result ) {
-	assert( result.length >= 0 && result.length <= Sudoku.totalValueAmount );
-}
-body {
-	int[][] filled;
-
-	foreach( row; 0..s.height ) {
-		foreach( col; 0..s.width ) {
-			if( s[ row, col ] != Sudoku.defaultValue ) {
-				filled ~= [ row, col ];
-			}
-		}
-	}
-	return filled;
-}
-
-unittest {
-	Sudoku s;
-
-	assert( getFilledFields( s ).length == 0 );
-
-	s[ 0, 0 ] = 1;
-	assert( getFilledFields( s ).length == 1 );
-	
-	s[ 0, 1 ] = 2;
-	assert( getFilledFields( s ).length == 2 );
-}
-
-
-/**
  Returns all possible values for the Sudoku in the specified Point.
 */
-int[] getPossible( in Sudoku s, in int r, in int c )// pure 
+int[] getPossible( in Sudoku s, in int r, in int c ) 
 in {
         assert( r >= 0 && r < s.height );
         assert( c >= 0 && c < s.width );
@@ -173,6 +138,11 @@ body {
         return buf;
 }
 
+int[] getPossible( in Sudoku s, in Point coord )
+{
+	return getPossible( s, coord.y, coord.x );
+}
+
 unittest {
 
         Sudoku s;
@@ -183,6 +153,8 @@ unittest {
 
 	s[ 0, 0 ] = 1;
         assert( getPossible( s, 0, 0 ) == testValues[1..$] );
+	assert( getPossible( s, Point( 0, 0 ) == testValues[1..$] );
+	
 
 	s[ 0, 1 ] = 2;
         assert( getPossible( s, 0, 0 ).length == 7 );
