@@ -21,7 +21,7 @@ import std.random : uniform;
 */
 bool insert( ref Sudoku s, in Point start, in bool randomized )
 {
-	insert( s, start.y, start.x, randomized );
+	return insert( s, start.y, start.x, randomized );
 }
 
 /**

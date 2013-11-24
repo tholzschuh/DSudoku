@@ -52,7 +52,7 @@ body {
                 lastC = c;
                 lastVal = val;
 
-                fields = getEmptyFields(s);
+                fields = getEmpty(s);
                 rand = cast(int)(uniform( 0, fields.length ));
 
                 r = fields[rand][0];
@@ -82,11 +82,11 @@ body {
 		if( cnt == 20 ) {
 			if( solve(s) ) {
 
-				while( getEmptyFields(s).length < Sudoku.totalValueAmount - num ) {
+				while( getEmpty(s).length < Sudoku.totalValueAmount - num ) {
 					lastR = r;
 					lastC = c;
 				
-					fields = getFilledFields(s);
+					fields = getFilled(s);
 
 					rand = cast(int)(uniform( 0, fields.length ));
 
@@ -99,7 +99,6 @@ body {
 
 			
 				}
-
 				break;
 			}
 		}

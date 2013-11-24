@@ -153,7 +153,7 @@ unittest {
 
 	s[ 0, 0 ] = 1;
         assert( getPossible( s, 0, 0 ) == testValues[1..$] );
-	assert( getPossible( s, Point( 0, 0 ) == testValues[1..$] );
+	assert( getPossible( s, Point( 0, 0 )) == testValues[1..$] );
 	
 
 	s[ 0, 1 ] = 2;
@@ -176,6 +176,74 @@ unittest {
         assert( getPossible(s, 0, 4) == [] );
 }
 
+/**
+ Returns the indexes of all empty fields in the Sudoku.
+*/
+int[][] getEmpty( in Sudoku s ) pure
+out( result ) {
+        assert( result.length >= 0 && result.length <= Sudoku.totalValueAmount );
+}
+body {
+        int[][] empty;
+
+        foreach( row; 0..s.height ) {
+                foreach( col; 0..s.width ) {
+                        if( s[row, col] == Sudoku.defaultValue ) {
+                                empty ~= [ row, col ];
+                        }
+                }
+        }
+
+        return empty;
+}
+
+
+unittest {
+        Sudoku s;
+        assert( getEmpty(s).length == Sudoku.totalValueAmount );
+
+        s[ 0, 0 ] = 1;
+        s[ 0, 1 ] = 2;
+        s[ 0, 2 ] = 3;
+
+        assert( getEmpty(s).length == Sudoku.totalValueAmount - 3 );
+
+        auto empty = getEmpty(s);
+        assert( s[ empty[0][0], empty[0][1] ] == 0 );
+}
+
+
+/**
+ Returns the indexes of all filled fields in the Sudoku.
+*/
+int[][] getFilled( in Sudoku s ) pure
+out( result ) {
+        assert( result.length >= 0 && result.length <= Sudoku.totalValueAmount );
+}
+body {
+        int[][] filled;
+
+        foreach( row; 0..s.height ) {
+                foreach( col; 0..s.width ) {
+                        if( s[ row, col ] != Sudoku.defaultValue ) {
+                                filled ~= [ row, col ];
+                        }
+                }
+        }
+        return filled;
+}
+
+unittest {
+        Sudoku s;
+
+        assert( getFilled( s ).length == 0 );
+
+        s[ 0, 0 ] = 1;
+        assert( getFilled( s ).length == 1 );
+
+        s[ 0, 1 ] = 2;
+        assert( getFilled( s ).length == 2 );
+}
 /**
  Returns true if the Sudoku is solvable.
 */
